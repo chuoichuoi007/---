@@ -1,0 +1,105 @@
+Option Explicit
+Public buocNhay As String
+
+Function point(ByVal a As Integer, ByVal b As Integer, ByVal c As Integer) As String
+    Dim x, y As Double
+    x = -b / (2 * a)
+    Dim delta As Double
+    delta = b * b - 4 * a * c
+    y = -delta / (4 * a)
+    point = "parabola coordinates of the vertex : " & CStr(x) & ", " & CStr(y)
+End Function
+
+
+
+Sub crateTable()
+    Dim a, b, c, xStart, xEnd, xStep As Integer
+    Dim mySheet As Worksheet
+    
+    
+    Set mySheet = ActiveWorkbook.Worksheets("Sheet1")
+    
+    Cells.Select
+    Selection.ClearContents
+    
+    mySheet.Range("A1") = "X"
+    mySheet.Range("B1") = "Y(X)"
+    a = InputBox(" Set A: ")
+    b = InputBox(" Set B: ")
+    c = InputBox(" Set C: ")
+    xStart = InputBox(" Set x Start: ")
+    xEnd = InputBox(" Set x End  : ")
+    xStep = InputBox(" Set step   : ")
+    
+    Dim det As String
+    det = point(a, b, c)
+    MsgBox det
+    
+    Dim khoangTron As String
+    Dim insertA, insertB As String
+    Dim i, j As Integer
+    j = 2
+    For i = xStart To xEnd Step xStep
+        insertA = "A" & CStr(j)
+        insertB = "B" & CStr(j)
+        mySheet.Range(insertA).Value = i
+        mySheet.Range(insertB).Value = a * i * i + b * i + c
+        j = j + 1
+    Next
+    buocNhay = CStr(j - 1)
+    khoangTron = "A1:B" & buocNhay
+    mySheet.ListObjects.Add(xlSrcRange, Range(khoangTron), , xlYes).Name = "Table2"
+    
+End Sub
+
+
+Sub createChart()
+  Dim oExcel As Object
+   Dim oBook As Object
+   Dim oSheet As Object
+   Dim mySheet1 As Worksheet
+   Dim Chart1 As Chart
+   
+
+   'Start a new workbook in Excel
+   Set oExcel = CreateObject("Excel.Application")
+   Set oBook = oExcel.Workbooks.Add
+
+   Set mySheet1 = ActiveWorkbook.Worksheets("Sheet1")
+   'Add data to cells of the first worksheet in the new workbook
+   Set oSheet = oBook.Worksheets(1)
+ 
+    oSheet.Range("A1:B" & buocNhay).Value = mySheet1.Range("A1:B" & buocNhay).Value
+    
+    Dim chartSheet1 As Chart
+    Set chartSheet1 = oBook.Charts.Add
+    With chartSheet1
+        .ChartType = xlXYScatterSmooth
+        .SeriesCollection(1).XValues = "=Sheet1!$A$2:$A$" & buocNhay
+        .SeriesCollection(1).Values = "=Sheet1!$B$2:$B$" & buocNhay
+	
+	.SeriesCollection(2).XValues = "=Sheet1!$A$2:$A$" & buocNhay
+        .SeriesCollection(2).Values = "=Sheet1!$B$2:$B$" & buocNhay
+        .HasTitle = True
+        .ChartTitle.Text = "My Lab"
+        'x-axis name
+        .Axes(xlCategory, xlPrimary).HasTitle = True
+        .Axes(xlCategory, xlPrimary).AxisTitle.Characters.Text = oSheet.Range("A1")
+        'y-axis name
+        .Axes(xlValue, xlPrimary).HasTitle = True
+        .Axes(xlValue, xlPrimary).AxisTitle.Characters.Text = oSheet.Range("B1")
+        .HasLegend = True
+        .Legend.LegendEntries(1).Delete
+        .Legend.LegendEntries(1).Font.Size = 20
+
+    End With
+    
+   'Save the Workbook and Quit Excel
+   oBook.SaveAs "E:\Book1.xlsx"
+   oExcel.Quit
+End Sub
+
+
+
+
+
